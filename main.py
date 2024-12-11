@@ -2,10 +2,11 @@ from dataclasses import dataclass
 import matplotlib.pyplot as plt
 import numpy as np
 from skimage.transform import resize
-from pytermgui import tim
 import tyro
 import warnings
 warnings.filterwarnings("ignore")
+
+import ansi
 
 @dataclass
 class Args:
@@ -69,10 +70,10 @@ def main():
             r, g, b = list(map(int, 255 * im[i, j, :3]))
             alpha = im[i, j, 3]
             if alpha < 0.9:
-                tim.print(" ", end="")
+                ansi.rich_print(" ", end="")
             else:
                 if args.color:
-                    tim.print(f"[{r};{g};{b}]@", end="")
+                    ansi.rich_print(f"[{r};{g};{b}]@", end="")
                 else:
                     if args.simplified:
                         idx = find_index(val, luminosity_scale_simplified)
@@ -80,7 +81,7 @@ def main():
                     else:
                         idx = find_index(val, luminosity_scale)
                         char = luminosity_table[idx]
-                    tim.print(f"{char}", end="")
+                    ansi.rich_print(f"{char}", end="")
         print()
 
 if __name__ == "__main__":

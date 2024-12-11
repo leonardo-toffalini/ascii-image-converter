@@ -9,6 +9,9 @@ __pycache__/
 # MacOS display settings
 *.DS_Store
 
+# C stuff
+*a.out
+
 # Distribution / packaging
 .Python
 build/
