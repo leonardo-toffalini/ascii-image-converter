@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 import matplotlib.pyplot as plt
+import numpy as np
 from skimage.transform import resize
 from pytermgui import tim
 import tyro
@@ -16,8 +17,12 @@ class Args:
     """Print in color"""
     width: int = 30
     """The width of the printed ascii image"""
+    simplified: bool = True
+    """The resolution of the ascii character map"""
 
-luminosity_table = r"`.-':_,^=;><+!rc*/z?sLTv)J7(|Fi{C}fI31tlu[neoZ5Yxjya]2ESwqkP6h9d4VpOGbUAKXHm8RD#$Bg0MNWQ%&@"
+luminosity_table_simplified = " .:-=+*#%@"
+luminosity_scale_simplified = np.linspace(0, 1, len(luminosity_table_simplified))
+luminosity_table = r" `.-':_,^=;><+!rc*/z?sLTv)J7(|Fi{C}fI31tlu[neoZ5Yxjya]2ESwqkP6h9d4VpOGbUAKXHm8RD#$Bg0MNWQ%&@"
 luminosity_scale = [0, 0.0751, 0.0829, 0.0848, 0.1227, 0.1403, 0.1559, 0.185, 0.2183, 0.2417, 0.2571, 0.2852, 0.2902,
                     0.2919, 0.3099, 0.3192, 0.3232, 0.3294, 0.3384, 0.3609, 0.3619, 0.3667, 0.3737, 0.3747, 0.3838,
                     0.3921, 0.396, 0.3984, 0.3993, 0.4075, 0.4091, 0.4101, 0.42, 0.423, 0.4247, 0.4274, 0.4293, 0.4328,
@@ -29,6 +34,8 @@ luminosity_scale = [0, 0.0751, 0.0829, 0.0848, 0.1227, 0.1403, 0.1559, 0.185, 0.
 
 def read_image(fpath, format):
     im = plt.imread(fpath, format=format)
+    # stretch the image horizontally because the stdout puts some buffer above and below
+    im = resize(im, (im.shape[0], im.shape[1]*2), anti_aliasing=True)
     return im
 
 def resize_image(image, width):
@@ -49,7 +56,7 @@ def find_index(x, luminosity_scale):
             l = m + 1
         else:
             return l
-    return l - 1
+    return l
 
 def main():
     args = tyro.cli(Args)
@@ -61,15 +68,19 @@ def main():
             val = im[i, j, :3].mean()
             r, g, b = list(map(int, 255 * im[i, j, :3]))
             alpha = im[i, j, 3]
-            if alpha < 0.8:
-                tim.print(" [invisible].", end="")
+            if alpha < 0.9:
+                tim.print(" ", end="")
             else:
-                idx = find_index(val, luminosity_scale)
                 if args.color:
-                    tim.print(f"[{r};{g};{b}]@[invisible].", end="")
+                    tim.print(f"[{r};{g};{b}]@", end="")
                 else:
-                    char = luminosity_table[idx]
-                    tim.print(f"{char}[invisible].", end="")
+                    if args.simplified:
+                        idx = find_index(val, luminosity_scale_simplified)
+                        char = luminosity_table_simplified[idx]
+                    else:
+                        idx = find_index(val, luminosity_scale)
+                        char = luminosity_table[idx]
+                    tim.print(f"{char}", end="")
         print()
 
 if __name__ == "__main__":
