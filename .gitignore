@@ -9,6 +9,8 @@ __pycache__/
 # MacOS display settings
 *.DS_Store
 
+*.txt
+
 # C stuff
 *a.out
 
